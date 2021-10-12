@@ -1,0 +1,120 @@
+server:
+  port: 8092
+
+kafka:
+  #监听topic
+  topics: ogg_data
+spring:
+  application:
+    name: aml-kafkaService
+  datasource:
+    druid:
+      filters: stat
+      maxActive: 20
+      initialSize: 1
+      maxWait: 60000
+      minIdle: 1
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: select 1 from dual
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      poolPreparedStatements: true
+      maxOpenPreparedStatements: 20
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 3MB   # 是单个文件大小，默认值1MB
+      max-request-size: 10MB   # 设置总上传的数据大小，默认值10MB
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: non_null
+  output:
+    ansi:
+      enabled: detect # 多彩输出，支持ANSI的话就采用彩色输出
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${EUREKA_HOST:127.0.0.1}:${EUREKA_PORT:8761}/eureka/
+  instance:
+    # Eureka服务器在接收到实例的最后一次发出的心跳后，需要等待多久才可以将此实例删除，默认为90秒
+    leaseExpirationDurationInSeconds: 30
+    statusPageUrlPath: /info
+    healthCheckUrlPath: /health
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${spring.application.instance_id:${server.port}}
+#mybatis-plus
+mybatis-plus:
+  mapper-locations: classpath*:mapper/kafka/*.xml
+  #实体扫描，多个package用逗号或者分号分隔
+  type-aliases-package: com.dhcc.aml.modules.kafka.entity
+  global-config:
+    #字段策略 0:"忽略判断",1:"非 NULL 判断"),2:"非空判断"
+    field-strategy: 2
+    # 默认不自动刷新。
+    # 如果配置了该属性，Mapper 对应的 XML 文件会自动刷新，更改 XML 文件后，无需再次重启工程，由此节省大量时间。
+    # 该配置不建议在生产环境打开！!
+    refresh: true
+    # 逻辑已删除值,(逻辑删除下有效)
+    logic-delete-value: 1
+    # 逻辑未删除值,(逻辑删除下有效)
+    logic-not-delete-value: 0
+    # 主键策略 全局唯一
+    db-config:
+      id-type: id_worker_str
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    call-setters-on-nulls: true
+
+swagger:
+  enabled: true
+  base-package: com.dhcc.aml.modules.kafka
+  title: aml-kafkaService
+  version: 1.0.0.SNAPSHOT
+  description: kafka取数
+  contact:
+    name: donghua
+feign:
+  httpclient:
+    enabled: false
+  okhttp:
+    enabled: true
+  compression:
+    request:
+      enabled: true
+      mime-types: text/xml,application/xml,application/json
+      min-request-size: 2048
+    response:
+      enabled: true
+ribbon:
+  eureka:
+    enabled: true
+  ReadTimeout: 120000
+  ConnectTimeout: 120000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 0
+  OkToRetryOnAllOperations: false
+  NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RandomRule
+hystrix:
+  threadpool:
+    default:
+      coreSize: 1000
+      maxQueueSize: 1000
+      queueSizeRejectionThreshold: 500
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 50000
+auth:
+  serviceId: aml-auth
+jwt:
+  token-header: Authorization
+  expire: 3600
+  rsa-secret: xx1WET12^%3^(WE45
+client:
+  rsa-secret: x2318^^(*WRYQWR(QW&T

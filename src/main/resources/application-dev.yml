@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@${OTHER_DATABASE_HOST:172.28.30.126}:${OTHER_DATABASE_PORT:7012}:xe
+    username: ${OTHER_DATABASE_USERNAME:AML_TEST}
+    password: ${OTHER_DATABASE_PASSWORD:AML_TEST}
+  redis:
+    database: 0
+    timeout: 2000
+    host: ${REDIS_HOST:127.0.0.1}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:ZQxP#GXT}
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:172.28.30.198:9092}
+    listener:
+      concurrency: 1  #指定listener 容器中的线程数，用于提高并发量
+      ack-mode: manual
+    consumer:
+      auto-offset-reset: latest #当各分区下有已提交的offset时，从提交的offset开始消费；无提交的offset时，消费新产生的该分区下的数据
+      enable-auto-commit: false #防止消息丢失，手动提交
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        group:
+          id: ${spring.application.name}
+        session:
+          timeout:
+            ms: 120000  #未能及时发送心跳而Rebalance,避免频繁的重平衡
+        heartbeat:
+          interval:
+            ms: 40000 #心跳时间，一般为超时时间的1/3，Consumer在被判定为死亡之前，能够发送至少 3 轮的心跳请求
+        max:
+          poll:
+            interval:
+              ms: 300000 #避免Consumer消费超时而Rebalance
