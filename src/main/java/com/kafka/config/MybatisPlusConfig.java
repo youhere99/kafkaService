@@ -1,4 +1,4 @@
-package com.dhcc.aml.modules.kafka.config;
+package com.kafka.config;
 
 import com.baomidou.mybatisplus.extension.plugins.OptimisticLockerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
@@ -12,7 +12,7 @@ import java.util.Properties;
 
 
 @EnableTransactionManagement
-@MapperScan("com.dhcc.aml.modules.kafka.mapper")
+@MapperScan("com.kafka.mapper")
 @Configuration
 public class MybatisPlusConfig {
 

@@ -1,7 +1,7 @@
-package com.dhcc.aml.modules.kafka.service;
+package com.kafka.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.dhcc.aml.modules.kafka.entity.CExLog;
+import com.kafka.entity.CExLog;
 
 /**
  * @author zhaomingxing

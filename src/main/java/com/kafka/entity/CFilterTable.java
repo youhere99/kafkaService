@@ -1,4 +1,4 @@
-package com.dhcc.aml.modules.kafka.entity;
+package com.kafka.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;

@@ -1,9 +1,9 @@
-package com.dhcc.aml.modules.kafka.service.impl;
+package com.kafka.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.dhcc.aml.modules.kafka.entity.CExLog;
-import com.dhcc.aml.modules.kafka.mapper.CExLogMapper;
-import com.dhcc.aml.modules.kafka.service.CExLogService;
+import com.kafka.entity.CExLog;
+import com.kafka.mapper.CExLogMapper;
+import com.kafka.service.CExLogService;
 import org.springframework.stereotype.Service;
 
 /**

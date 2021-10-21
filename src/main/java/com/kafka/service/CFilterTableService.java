@@ -1,7 +1,7 @@
-package com.dhcc.aml.modules.kafka.service;
+package com.kafka.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.dhcc.aml.modules.kafka.entity.CFilterTable;
+import com.kafka.entity.CFilterTable;
 
 /**
  * @author zhaomingxing

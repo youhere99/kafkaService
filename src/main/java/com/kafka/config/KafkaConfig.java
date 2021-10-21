@@ -1,11 +1,10 @@
-package com.dhcc.aml.modules.kafka.config;
+package com.kafka.config;
 
 import com.alibaba.fastjson.JSONObject;
-import com.dhcc.aml.common.core.util.AmlIdWorker;
-import com.dhcc.aml.modules.kafka.entity.CExLog;
-import com.dhcc.aml.modules.kafka.entity.CFilterTable;
-import com.dhcc.aml.modules.kafka.service.CExLogService;
-import com.dhcc.aml.modules.kafka.service.CFilterTableService;
+import com.kafka.entity.CExLog;
+import com.kafka.entity.CFilterTable;
+import com.kafka.service.CExLogService;
+import com.kafka.service.CFilterTableService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author zhaomingxing
@@ -54,13 +54,13 @@ public class KafkaConfig {
     @Bean
     public ConsumerAwareListenerErrorHandler consumerAwareErrorHandler() {
         return (message, exception, consumer) -> {
-            try{
+            try {
                 log.info("消费异常：", exception);
-                CExLog exLog = CExLog.builder().id(AmlIdWorker.get32UUID()).exMsg(message.getPayload().toString()).exError(exception.toString()).exTime(new Date()).build();
+                CExLog exLog = CExLog.builder().id(UUID.randomUUID().toString()).exMsg(message.getPayload().toString()).exError(exception.toString()).exTime(new Date()).build();
                 cExLogService.save(exLog);
-            }catch(Exception e){
-                log.error("save(exLog)异常：",e);
-            }finally {
+            } catch (Exception e) {
+                log.error("save(exLog)异常：", e);
+            } finally {
                 consumer.commitSync();
             }
             return message;

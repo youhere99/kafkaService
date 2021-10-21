@@ -1,7 +1,7 @@
-package com.dhcc.aml.modules.kafka.mapper;
+package com.kafka.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.dhcc.aml.modules.kafka.entity.CExLog;
+import com.kafka.entity.CExLog;
 
 /**
  * @author zhaomingxing

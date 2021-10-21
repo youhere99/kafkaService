@@ -1,12 +1,11 @@
-package com.dhcc.aml.modules.kafka.comsumer;
+package com.kafka.comsumer;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.dhcc.aml.common.core.util.AmlIdWorker;
-import com.dhcc.aml.modules.kafka.entity.CPbRecord;
-import com.dhcc.aml.modules.kafka.service.CPbRecordService;
+import com.kafka.entity.CPbRecord;
+import com.kafka.service.CPbRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -72,7 +71,7 @@ public class KafkaConsumer {
                 sql = sqlD.toString();
                 break;
         }
-        log.info("sql--{}",sql);
+        log.info("sql--{}", sql);
         jdbcTemplate.execute(sql);
         opTs = StringUtils.substringBefore(opTs, " ");
         String opTsPre = redisTemplate.opsForValue().get("opTs");
@@ -80,7 +79,7 @@ public class KafkaConsumer {
             redisTemplate.opsForValue().set("opTs", opTs);
         } else {
             if (!StringUtils.equals(opTsPre, opTs)) {
-                CPbRecord cPbRecord = CPbRecord.builder().id(AmlIdWorker.get32UUID()).pbTime(opTsPre).firstDataMsg(record.value()).crateTime(new Date()).status(CPbRecord.Status.RUN.getCode()).build();
+                CPbRecord cPbRecord = CPbRecord.builder().id(UUID.randomUUID().toString()).pbTime(opTsPre).firstDataMsg(record.value()).crateTime(new Date()).status(CPbRecord.Status.RUN.getCode()).build();
                 cPbRecordService.save(cPbRecord);
                 redisTemplate.opsForValue().set("opTs", opTs);
             }
@@ -106,7 +105,7 @@ public class KafkaConsumer {
             }
         } else {
             for (int i = 0; i < columnWhere.size(); i++) {
-                sqlDWhere.append(columnWhere.get(i)  +" "+ (valuesWhere.get(i)!=null?"='"+valuesWhere.get(i)+"'":"is null" ));
+                sqlDWhere.append(columnWhere.get(i) + " " + (valuesWhere.get(i) != null ? "='" + valuesWhere.get(i) + "'" : "is null"));
                 if (i < columnWhere.size() - 1) {
                     sqlDWhere.append(" and ");
                 }
@@ -125,7 +124,7 @@ public class KafkaConsumer {
         if (!primaryKeys.isEmpty()) {
             for (int i = 0; i < primaryKeys.size(); i++) {
                 int j = column.indexOf(primaryKeys.get(i));
-                sqlUWhere.append(column.get(j) + "='" + values.get(j)+"'");
+                sqlUWhere.append(column.get(j) + "='" + values.get(j) + "'");
                 if (i < primaryKeys.size() - 1) {
                     sqlUWhere.append(" and ");
                 }
@@ -137,7 +136,7 @@ public class KafkaConsumer {
             List<Object> columnWhere = before.get("column");
             List<Object> valuesWhere = before.get("values");
             for (int i = 0; i < columnWhere.size(); i++) {
-                sqlUWhere.append(columnWhere.get(i)  +" "+ (valuesWhere.get(i)!=null?"='"+valuesWhere.get(i)+"'":"is null" ));
+                sqlUWhere.append(columnWhere.get(i) + " " + (valuesWhere.get(i) != null ? "='" + valuesWhere.get(i) + "'" : "is null"));
                 if (i < columnWhere.size() - 1) {
                     sqlUWhere.append(" and ");
                 }
@@ -148,7 +147,7 @@ public class KafkaConsumer {
         values.add(opTs);
         values.add(opType);
         for (int i = 0; i < column.size(); i++) {
-            sqlU.append(column.get(i) + "=" + (values.get(i)!=null?"'"+values.get(i)+"'": "null"));
+            sqlU.append(column.get(i) + "=" + (values.get(i) != null ? "'" + values.get(i) + "'" : "null"));
             if (i < column.size() - 1) {
                 sqlU.append(" , ");
             }
@@ -168,7 +167,7 @@ public class KafkaConsumer {
         StringBuffer sqlI = new StringBuffer("insert into " + table);
         List<String> values2 = new ArrayList<>();
         for (Object s : values) {
-            values2.add(s!=null?"'" + s + "'":"null");
+            values2.add(s != null ? "'" + s + "'" : "null");
         }
         sqlI.append(" (" + StringUtils.join(column, ",") + ")");
         sqlI.append(" values (" + StringUtils.join(values2, ",") + ")");
@@ -177,7 +176,7 @@ public class KafkaConsumer {
 
 
     protected Map<String, List<Object>> toMap(JSONObject jSONObject) {
-        Map<String, Object> map = JSONObject.parseObject(JSONObject.toJSONString(jSONObject, SerializerFeature.WRITE_MAP_NULL_FEATURES,SerializerFeature.WriteNullStringAsEmpty), Map.class, Feature.InitStringFieldAsEmpty,Feature.CustomMapDeserializer);
+        Map<String, Object> map = JSONObject.parseObject(JSONObject.toJSONString(jSONObject, SerializerFeature.WRITE_MAP_NULL_FEATURES, SerializerFeature.WriteNullStringAsEmpty), Map.class, Feature.InitStringFieldAsEmpty, Feature.CustomMapDeserializer);
         List<Object> column = new ArrayList<>();
         List<Object> values = new ArrayList<>();
         Iterator<Map.Entry<String, Object>> iterator = map.entrySet().iterator();

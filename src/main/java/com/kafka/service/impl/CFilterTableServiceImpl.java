@@ -1,9 +1,9 @@
-package com.dhcc.aml.modules.kafka.service.impl;
+package com.kafka.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.dhcc.aml.modules.kafka.entity.CFilterTable;
-import com.dhcc.aml.modules.kafka.mapper.CFilterTableMapper;
-import com.dhcc.aml.modules.kafka.service.CFilterTableService;
+import com.kafka.entity.CFilterTable;
+import com.kafka.mapper.CFilterTableMapper;
+import com.kafka.service.CFilterTableService;
 import org.springframework.stereotype.Service;
 
 /**
