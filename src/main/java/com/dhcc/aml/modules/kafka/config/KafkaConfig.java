@@ -1,6 +1,5 @@
 package com.dhcc.aml.modules.kafka.config;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.dhcc.aml.common.core.util.AmlIdWorker;
 import com.dhcc.aml.modules.kafka.entity.CExLog;
@@ -55,10 +54,15 @@ public class KafkaConfig {
     @Bean
     public ConsumerAwareListenerErrorHandler consumerAwareErrorHandler() {
         return (message, exception, consumer) -> {
-            CExLog exLog = CExLog.builder().id(AmlIdWorker.get32UUID()).exMsg(message.getPayload().toString()).exError(exception.toString()).exTime(new Date()).build();
-            cExLogService.save(exLog);
-            consumer.commitSync();
-            log.error("消费异常：", exception);
+            try{
+                log.info("消费异常：", exception);
+                CExLog exLog = CExLog.builder().id(AmlIdWorker.get32UUID()).exMsg(message.getPayload().toString()).exError(exception.toString()).exTime(new Date()).build();
+                cExLogService.save(exLog);
+            }catch(Exception e){
+                log.error("save(exLog)异常：",e);
+            }finally {
+                consumer.commitSync();
+            }
             return message;
         };
     }
@@ -77,12 +81,15 @@ public class KafkaConfig {
         List<CFilterTable> list = cFilterTableService.list(null);
         if (list != null && list.size() > 0) {
             concurrentKafkaListenerContainerFactory.setRecordFilterStrategy(consumerRecord -> {
-                JSONArray jsonArray = JSONArray.parseArray((String) consumerRecord.value());
-                JSONObject jsonObject = jsonArray.getJSONObject(0);
+                JSONObject jsonObject = JSONObject.parseObject((String) consumerRecord.value());
                 String table = StringUtils.replace(jsonObject.getString("table"), ".", "_");
                 return (list.stream().noneMatch(x -> {
                     return x.getOwnerTableName().equals(table);
                 }));
+            });
+        } else {
+            concurrentKafkaListenerContainerFactory.setRecordFilterStrategy(consumerRecord -> {
+                return true;
             });
         }
         return concurrentKafkaListenerContainerFactory;

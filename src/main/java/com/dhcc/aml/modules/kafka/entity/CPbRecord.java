@@ -48,7 +48,7 @@ public class CPbRecord implements Serializable {
     private Date crateTime;
 
     /**
-     *  {@link #status}
+     * {@link #status}
      */
     @Getter
     @AllArgsConstructor

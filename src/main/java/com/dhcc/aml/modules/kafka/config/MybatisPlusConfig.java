@@ -1,7 +1,5 @@
 package com.dhcc.aml.modules.kafka.config;
 
-import com.baomidou.mybatisplus.core.injector.ISqlInjector;
-import com.baomidou.mybatisplus.extension.injector.LogicSqlInjector;
 import com.baomidou.mybatisplus.extension.plugins.OptimisticLockerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.PerformanceInterceptor;
@@ -27,7 +25,6 @@ public class MybatisPlusConfig {
     }
 
 
-
     @Bean
     public PerformanceInterceptor performanceInterceptor() {
         PerformanceInterceptor performanceInterceptor = new PerformanceInterceptor();
@@ -40,6 +37,7 @@ public class MybatisPlusConfig {
 
     /**
      * 乐观锁插件
+     *
      * @return
      */
     @Bean
