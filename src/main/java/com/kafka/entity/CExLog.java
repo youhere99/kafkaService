@@ -30,6 +30,10 @@ public class CExLog implements Serializable {
     @ApiModelProperty(value = "主键")
     private String id;
 
+    @TableField(value = "TABLE_NAME")
+    @ApiModelProperty(value = "消费的表名")
+    private String tableName;
+
 
     @TableField(value = "EX_MSG")
     @ApiModelProperty(value = "异常消息体")

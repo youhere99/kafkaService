@@ -12,7 +12,7 @@ import java.util.Properties;
 
 
 @EnableTransactionManagement
-@MapperScan("com.kafka.mapper")
+@MapperScan("com.dhcc.aml.modules.kafka.mapper")
 @Configuration
 public class MybatisPlusConfig {
 

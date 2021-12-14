@@ -7,6 +7,8 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.kafka.entity.CPbRecord;
 import com.kafka.service.CPbRecordService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +41,7 @@ public class KafkaConsumer {
     /**
      * 消费监听
      */
-    @KafkaListener(topics = {"#{'${kafka.topics}'.split(',')}"}, containerFactory = "concurrentKafkaListenerContainerFactory", errorHandler = "consumerAwareErrorHandler")
+    @KafkaListener(id="sqlConsumer",topics = {"#{'${kafka.topics}'.split(',')}"}, containerFactory = "concurrentKafkaListenerContainerFactory", errorHandler = "consumerAwareErrorHandler")
     public void consumerMsg(ConsumerRecord<String, String> record, Acknowledgment ack) {
         log.debug(String.format("主题：%s，分区：%d，偏移量：%d，key：%s，value：%s", record.topic(), record.partition(), record.offset(), record.key(), record.value()));
         JSONObject jsonObject = JSONObject.parseObject(record.value());
@@ -90,7 +92,7 @@ public class KafkaConsumer {
     }
 
     private StringBuffer dmlD(JSONObject jsonObject, String table, List<String> primaryKeys, String opTs, String opType) {
-        Map<String, List<Object>> before = toMap(jsonObject.getJSONObject("before"));
+        Map<String, List<Object>> before = toMap(jsonObject.getJSONObject("before"),table);
         List<Object> columnWhere = before.get("column");
         List<Object> valuesWhere = before.get("values");
         StringBuffer sqlD = new StringBuffer("DELETE FROM  " + table);
@@ -116,7 +118,7 @@ public class KafkaConsumer {
     }
 
     private StringBuffer dmlU(JSONObject jsonObject, String table, List<String> primaryKeys, String opTs, String opType) {
-        Map<String, List<Object>> after = toMap(jsonObject.getJSONObject("after"));
+        Map<String, List<Object>> after = toMap(jsonObject.getJSONObject("after"),table);
         List<Object> column = after.get("column");
         List<Object> values = after.get("values");
         StringBuffer sqlU = new StringBuffer("UPDATE  " + table + " SET ");
@@ -132,7 +134,7 @@ public class KafkaConsumer {
                 values.remove(j);
             }
         } else {
-            Map<String, List<Object>> before = toMap(jsonObject.getJSONObject("before"));
+            Map<String, List<Object>> before = toMap(jsonObject.getJSONObject("before"),table);
             List<Object> columnWhere = before.get("column");
             List<Object> valuesWhere = before.get("values");
             for (int i = 0; i < columnWhere.size(); i++) {
@@ -157,7 +159,7 @@ public class KafkaConsumer {
     }
 
     private StringBuffer dmlI(JSONObject jsonObject, String table, String opTs, String opType) {
-        Map<String, List<Object>> after = toMap(jsonObject.getJSONObject("after"));
+        Map<String, List<Object>> after = toMap(jsonObject.getJSONObject("after"),table);
         List<Object> column = after.get("column");
         column.add("OP_TS");
         column.add("OP_TYPE");
@@ -175,8 +177,9 @@ public class KafkaConsumer {
     }
 
 
-    protected Map<String, List<Object>> toMap(JSONObject jSONObject) {
+    protected Map<String, List<Object>> toMap(JSONObject jSONObject,String table) {
         Map<String, Object> map = JSONObject.parseObject(JSONObject.toJSONString(jSONObject, SerializerFeature.WRITE_MAP_NULL_FEATURES, SerializerFeature.WriteNullStringAsEmpty), Map.class, Feature.InitStringFieldAsEmpty, Feature.CustomMapDeserializer);
+        map= filterColumn(map, table);
         List<Object> column = new ArrayList<>();
         List<Object> values = new ArrayList<>();
         Iterator<Map.Entry<String, Object>> iterator = map.entrySet().iterator();
@@ -190,5 +193,36 @@ public class KafkaConsumer {
         map2.put("values", values);
         return map2;
     }
+
+    /**
+     * 匹配数据中的字段
+     *
+     * @return
+     */
+    protected Map<String, Object> filterColumn(Map<String, Object> map, String table) {
+        Map<String, Object> oldMap= new HashMap<>(map);
+        int before=oldMap.size();
+        List<String> list = JSONObject.parseArray(redisTemplate.opsForValue().get(table), String.class);
+        Iterator<String> iterator = map.keySet().iterator();
+        List notExistCloumn=new ArrayList();
+        while (iterator.hasNext()){
+            String next = iterator.next();
+            if (!list.contains(next)) {
+                iterator.remove();
+                notExistCloumn.add(next);
+            }else{
+                map.put(next,StringEscapeUtils.escapeSql(ConvertUtils.convert(oldMap.get(next))));
+            }
+        }
+        int after=map.size();
+        if(before!=after){
+            log.warn("kafka消息表字段数据-{}",JSONObject.toJSONString(oldMap));
+            log.warn("数据库表字段-{}",JSONObject.toJSONString(list));
+            log.warn("改字段不在表中-{}",JSONObject.toJSONString(notExistCloumn));
+        }
+        return map;
+    }
+
+
 
 }

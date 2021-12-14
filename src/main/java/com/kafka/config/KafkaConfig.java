@@ -3,8 +3,10 @@ package com.kafka.config;
 import com.alibaba.fastjson.JSONObject;
 import com.kafka.entity.CExLog;
 import com.kafka.entity.CFilterTable;
+import com.kafka.entity.CKStatus;
 import com.kafka.service.CExLogService;
 import com.kafka.service.CFilterTableService;
+import com.kafka.service.CKStatusService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +15,10 @@ import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.listener.ConsumerAwareListenerErrorHandler;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -44,6 +48,12 @@ public class KafkaConfig {
     @Autowired
     private ConsumerFactory consumerFactory;
 
+    @Autowired
+    private CKStatusService cKStatusService;
+
+    @Autowired
+    private KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
+
 
     /**
      * 异常处理
@@ -55,13 +65,20 @@ public class KafkaConfig {
     public ConsumerAwareListenerErrorHandler consumerAwareErrorHandler() {
         return (message, exception, consumer) -> {
             try {
-                log.info("消费异常：", exception);
-                CExLog exLog = CExLog.builder().id(UUID.randomUUID().toString()).exMsg(message.getPayload().toString()).exError(exception.toString()).exTime(new Date()).build();
+                kafkaListenerEndpointRegistry.getListenerContainer("sqlConsumer").stop();
+                log.warn("------------kafka暂停消费--------------");
+                CKStatus cKStatus = CKStatus.builder().status("1").updateTime(new Date()).build();
+                cKStatusService.update(cKStatus, null);
+                log.error("消费异常：", exception);
+                JSONObject jsonObject = JSONObject.parseObject(message.getPayload().toString());
+                String table = StringUtils.replace(jsonObject.getString("table"), ".", "_");
+                CExLog exLog = CExLog.builder().id(UUID.randomUUID().toString()).tableName(table).exMsg(message.getPayload().toString()).exError(exception.toString()).exTime(new Date()).build();
                 cExLogService.save(exLog);
             } catch (Exception e) {
                 log.error("save(exLog)异常：", e);
             } finally {
-                consumer.commitSync();
+//                consumer.commitSync();
+
             }
             return message;
         };
@@ -94,4 +111,16 @@ public class KafkaConfig {
         }
         return concurrentKafkaListenerContainerFactory;
     }
+
+    @Scheduled(cron = "${check.kafka.cron}")
+    public void startKafka() {
+        if (!kafkaListenerEndpointRegistry.getListenerContainer("sqlConsumer").isRunning()) {
+            CKStatus ckStatus = cKStatusService.list(null).get(0);
+            if (ckStatus.getStatus().equals("0")) {
+                kafkaListenerEndpointRegistry.getListenerContainer("sqlConsumer").start();
+                log.warn("------------kafka启动消费--------------");
+            }
+        }
+    }
+
 }
