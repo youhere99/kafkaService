@@ -4,19 +4,16 @@ import com.spring4all.swagger.EnableSwagger2Doc;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
-import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 
-@EnableEurekaClient
+//@EnableEurekaClient
 @SpringBootApplication(exclude = {
         SecurityAutoConfiguration.class,
         SecurityAutoConfiguration.class
 })
-@EnableCircuitBreaker
-@EnableFeignClients({"com.dhcc.aml"})
+//@EnableCircuitBreaker
+//@EnableFeignClients({"com.dhcc.aml"})
 @EnableSwagger2Doc
 @EnableScheduling
 public class KafkaServiceBootstrap {
