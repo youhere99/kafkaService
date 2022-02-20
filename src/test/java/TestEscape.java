@@ -19,11 +19,11 @@ import java.util.Map;
 public class TestEscape {
 
     @Test
-    public void testE(){
-        String sql="insert into YWUSER_PRPCITEMDEVICE (ITEMNO,CLIENTNO,CLIENTTEL,MAKEYEAR,MAKEDATE,POLICYNO,FLAG,CAROWNER,FUELNAME,DEVICENO,USEDATE,USAGE,RISKCODE,REALUSEPRESSURE,REALUSETEMPERATURE,REMARK,MAKEFACTORY,CAPACITY,PREUSETEMPERATURE,PREUSEPRESSURE,DEVICENAME,MODEL,CLIENTNAME,OP_TS,OP_TYPE) values ('0',null,null,null,null,'6211816282230637840',null,'符进','LRDS6PEBXGR01533C','欧曼牌BJ4L67'MB-A',null,'5','2230',null,null,null,'货车',null,null,null,null,'湘N0J031',null,'2021-12-09 11:03:54.000099','I')";
+    public void testE() {
+        String sql = "insert into YWUSER_PRPCITEMDEVICE (ITEMNO,CLIENTNO,CLIENTTEL,MAKEYEAR,MAKEDATE,POLICYNO,FLAG,CAROWNER,FUELNAME,DEVICENO,USEDATE,USAGE,RISKCODE,REALUSEPRESSURE,REALUSETEMPERATURE,REMARK,MAKEFACTORY,CAPACITY,PREUSETEMPERATURE,PREUSEPRESSURE,DEVICENAME,MODEL,CLIENTNAME,OP_TS,OP_TYPE) values ('0',null,null,null,null,'6211816282230637840',null,'符进','LRDS6PEBXGR01533C','欧曼牌BJ4L67'MB-A',null,'5','2230',null,null,null,'货车',null,null,null,null,'湘N0J031',null,'2021-12-09 11:03:54.000099','I')";
         sql = StringEscapeUtils.escapeSql(sql);
         log.info(sql);
-        sql="欧曼牌BJ4L67'MB-A";
+        sql = "欧曼牌BJ4L67'MB-A";
         sql = StringEscapeUtils.escapeSql(sql);
         log.info(sql);
     }
@@ -32,12 +32,12 @@ public class TestEscape {
      * 获取类的属性名
      */
     @Test
-    public  void testLambda(){
+    public void testLambda() {
         /**
          * 获取tablefiled字段名
          */
         Map<String, ColumnCache> columnMap = LambdaUtils.getColumnMap(CExLog.class);
-        getColumn(CExLog::getTableName,columnMap);
+        getColumn(CExLog::getTableName, columnMap);
     }
 
     private String getColumn(SFunction<CExLog, ?> column, Map<String, ColumnCache> columnMap) {
